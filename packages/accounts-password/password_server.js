@@ -5,7 +5,7 @@ const bcryptHash = Meteor.wrapAsync(bcrypt.hash);
 const bcryptCompare = Meteor.wrapAsync(bcrypt.compare);
 
 // Utility for grabbing user
-const getUserById = id => Meteor.users.findOne(id);
+const getUserById = (id, { fields = {} } = {}) => Meteor.users.findOne(id, { fields });
 
 // User records have a 'services.password.bcrypt' field on them to hold
 // their hashed passwords (unless they have a 'services.password.srp'
@@ -419,7 +419,7 @@ Accounts.setUsername = (userId, newUsername) => {
   check(userId, NonEmptyString);
   check(newUsername, NonEmptyString);
 
-  const user = getUserById(userId);
+  const user = getUserById(userId, { fields: { username: 1 } });
   if (!user) {
     handleError("User not found");
   }
@@ -523,7 +523,7 @@ Meteor.methods({changePassword: function (oldPassword, newPassword) {
 Accounts.setPassword = (userId, newPlaintextPassword, options) => {
   options = { logout: true , ...options };
 
-  const user = getUserById(userId);
+  const user = getUserById(userId, { fields: { _id: 1 } });
   if (!user) {
     throw new Meteor.Error(403, "User not found");
   }
@@ -948,7 +948,7 @@ Accounts.addEmail = (userId, newEmail, verified) => {
     verified = false;
   }
 
-  const user = getUserById(userId);
+  const user = getUserById(userId, { fields: { emails: 1 } });
   if (!user)
     throw new Meteor.Error(403, "User not found");
 
@@ -1030,7 +1030,7 @@ Accounts.removeEmail = (userId, email) => {
   check(userId, NonEmptyString);
   check(email, NonEmptyString);
 
-  const user = getUserById(userId);
+  const user = getUserById(userId, { fields: { _id: 1 } });
   if (!user)
     throw new Meteor.Error(403, "User not found");
 
